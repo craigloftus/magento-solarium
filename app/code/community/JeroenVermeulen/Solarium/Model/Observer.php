@@ -43,4 +43,19 @@ class JeroenVermeulen_Solarium_Model_Observer extends Varien_Event_Observer
         Mage::helper( 'jeroenvermeulen_solarium/autoloader' )->register();
     }
 
+    /**
+     * This is an observer function for the event 'catalog_product_delete_after_done'.
+     * It remove products from the solr index when they are deleted
+     *
+     * @param Varien_Event_Observer $observer
+     */
+    public function productDeleted($observer) {
+        $productId = $observer->getEvent()->getProduct()->getId();
+
+        if ( $productId && JeroenVermeulen_Solarium_Model_Engine::isEnabled()) {
+            /** @var JeroenVermeulen_Solarium_Model_Engine $engine */
+            $engine = Mage::getSingleton( 'jeroenvermeulen_solarium/engine' );
+            $engine->cleanIndex( null, [$productId] );
+        }
+    }
 }
